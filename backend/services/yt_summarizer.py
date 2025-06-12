@@ -1,44 +1,58 @@
-from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, NoTranscriptFound
+import os
+import tempfile
+from yt_dlp import YoutubeDL
+import webvtt
 from services.llm_wrapper import get_llm_response
-from urllib.parse import urlparse, parse_qs
 
-def extract_video_id(video_url: str) -> str:
-    query = urlparse(video_url).query
-    return parse_qs(query).get("v", [None])[0]
+MAX_TOKENS = 10000  # Safe limit for LLM
 
 def fetch_and_summarize_transcript(video_url: str) -> str:
     try:
-        video_id = extract_video_id(video_url)
-        print("video-id :-", video_id)
+        # Create a temporary directory for subtitle download
+        with tempfile.TemporaryDirectory() as tmpdir:
+            options = {
+                'skip_download': True,
+                'writesubtitles': True,
+                'writeautomaticsub': True,
+                'subtitleslangs': ['en'],
+                'outtmpl': os.path.join(tmpdir, '%(id)s.%(ext)s'),
+                'quiet': True
+            }
 
-        if not video_id:
-            return "Invalid YouTube URL."
-        
-        print("Fetching transcript for video_id:", video_id)
+            with YoutubeDL(options) as ydl:
+                info = ydl.extract_info(video_url, download=True)
+                video_id = info.get("id")
+                vtt_file = os.path.join(tmpdir, f"{video_id}.en.vtt")
 
-        transcript_list = YouTubeTranscriptApi.get_transcript(video_id, languages=['en'])
-        print("transcript :-", transcript_list)
+                if not os.path.exists(vtt_file):
+                    return "No English subtitles found for this video."
 
-        text = "\n".join([t['text'] for t in transcript_list])
-        print("transcript-text :-", text[:300])  # partial print
+                # Parse VTT file and extract text
+                lines = []
+                for caption in webvtt.read(vtt_file):
+                    lines.append(caption.text)
+                transcript = " ".join(lines).replace('\n', ' ').strip()
 
-        if not text.strip():
-            return "Transcript is empty."
+                if not transcript:
+                    return "Transcript is empty or could not be parsed."
 
-        prompt = (
-            "You are an expert content summarizer. Summarize the following video transcript "
-            "clearly and concisely in a few paragraphs (3-5), suitable for display on a website. "
-            "Avoid bullet points or lists. Use simple language, and focus on the key ideas and highlights:\n\n"
-            f"{text}"
-        )
+                # Truncate large inputs by character length
+                if len(transcript) > MAX_TOKENS * 4:
+                    print("Transcript too long. Truncating...")
+                    transcript = transcript[:MAX_TOKENS * 4]
 
-        summary = get_llm_response(prompt)
-        print("Generated Summary:", summary[:300])  # partial print
-        return summary
+                # Build prompt
+                prompt = (
+                    "You are an expert content summarizer. Summarize the following video transcript "
+                    "clearly and concisely in a few paragraphs (3-5), suitable for display on a website. "
+                    "Avoid bullet points or lists. Use simple language, and focus on the key ideas and highlights:\n\n"
+                    f"{transcript}"
+                )
 
-    except (TranscriptsDisabled, NoTranscriptFound):
-        return "No English transcripts found for this video."
+                # Call LLM
+                summary = get_llm_response(prompt)
+                return summary
+
     except Exception as e:
-        print("Exception while fetching transcript:", str(e))
-        print("Unexpected error:", str(e))
-        return f"Unexpected error: {str(e)}"
+        print("❌ Unexpected error while summarizing:", str(e))
+        return f"Error fetching or summarizing transcript: {str(e)}"
