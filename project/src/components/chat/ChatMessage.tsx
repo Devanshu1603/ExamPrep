@@ -37,9 +37,10 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 components={{
-                  code({ node, inline, className, children, ...props }) {
+                  code({ node, className, children, ...props }) {
                     const match = /language-(\w+)/.exec(className || '');
-                    return !inline && match ? (
+                    const isInline = (props as any).inline;
+                    return !isInline && match ? (
                       <SyntaxHighlighter
                         style={vscDarkPlus}
                         language={match[1]}
@@ -50,7 +51,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
                         {String(children).replace(/\n$/, '')}
                       </SyntaxHighlighter>
                     ) : (
-                      <code className={`${className} px-1 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-700`} {...props}>
+                      <code className={`${className || ''} px-1 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-700`} {...props}>
                         {children}
                       </code>
                     );
