@@ -1,3 +1,4 @@
 # Virtualenv
 venv/
 .env
+package-lock.json
