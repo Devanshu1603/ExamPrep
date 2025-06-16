@@ -1,5 +1,3 @@
-# .gitignore
+# Virtualenv
 venv/
-__pycache__/
-*.pyc
 .env

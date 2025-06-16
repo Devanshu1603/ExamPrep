@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtualenv
+venv/
+
+# Node (if mistakenly included)
+node_modules/
+package-lock.json
+package.json
+
+# Env
+.env

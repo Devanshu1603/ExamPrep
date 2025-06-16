@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from services.vector_db import show_all_documents
 # Import routers
 from routes import (
     upload,
@@ -35,6 +34,3 @@ app.include_router(yt_summarize, tags=["YouTube Transcript Extractor"])
 @app.get("/")
 def read_root():
     return {"message": "AI Exam Preparation API is live and ready!"}
-
-stored = show_all_documents()
-print("stored :- ", stored)

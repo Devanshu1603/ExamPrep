@@ -1,29 +1,25 @@
 // src/config/firebase.ts
 
-import { initializeApp, getApp } from "firebase/app";
+import { initializeApp, getApp, getApps } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
-import { getFirestore } from "firebase/firestore"; // ✅ Import Firestore
+import { getFirestore } from "firebase/firestore";
 
-// Your Firebase config
+// Firebase config from environment variables
 const firebaseConfig = {
-  apiKey: "AIzaSyD618XZZNEkEHlbgCZ_dWbPn3DAG6hxjKc",
-  authDomain: "examprep-aea73.firebaseapp.com",
-  projectId: "examprep-aea73",
-  storageBucket: "examprep-aea73.firebasestorage.app",
-  messagingSenderId: "352855072535",
-  appId: "1:352855072535:web:e9f29072bbb2e5b751a152"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-// Robust Firebase app initialization
-let app;
-try {
-  app = getApp();
-} catch (error) {
-  app = initializeApp(firebaseConfig);
-}
+// Initialize Firebase
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
+// Export services
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
-const db = getFirestore(app); // ✅ Initialize Firestore
+const db = getFirestore(app);
 
-export { app, auth, googleProvider, db }; // ✅ Export db
+export { app, auth, googleProvider, db };

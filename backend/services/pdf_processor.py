@@ -2,8 +2,9 @@ import fitz  # PyMuPDF
 import pytesseract
 from PIL import Image
 import io
+from config.env import PYTESSERACT_PATH
 
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+pytesseract.pytesseract.tesseract_cmd = PYTESSERACT_PATH
 
 def extract_text_from_any_pdf(pdf_path, output_txt_path=None):
     doc = fitz.open(pdf_path)
