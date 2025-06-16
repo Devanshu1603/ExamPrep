@@ -15,31 +15,6 @@ An intelligent, AI-powered assistant to help students prepare for exams by uploa
 
 ---
 
-## 🧩 Project Structure
-
-```
-backend/
-├── routes/
-│   ├── summarize.py         # Summarize syllabus/book
-│   ├── yt_summarize.py      # Summarize YouTube video
-│   ├── question_gen.py      # Generate questions from text
-│   ├── rag_query.py         # RAG query handler (QA using context)
-│   └── upload.py            # Handles PDF upload, chunking, and storage
-├── services/
-│   ├── pdf_processor.py     # Extract text from PDFs using PyMuPDF
-│   ├── chunker.py           # Recursive chunking of extracted text
-│   ├── embedder.py          # Generate embeddings using Gemini API
-│   ├── vector_db.py         # Store & query chunks in ChromaDB
-│   ├── llm_wrapper.py       # Gemini API integration
-│   └── yt_summarizer.py     # Fetch transcript and summarize YouTube videos
-├── config/
-│   ├── env.py               # Environment variables (API keys etc.)
-│   └── firebase_admin.py    # Firebase Admin SDK for Firestore usage
-└── main.py                  # FastAPI app entrypoint
-```
-
----
-
 ## 📥 How It Works (Flow)
 
 ### Step-by-step Flow (PDF Upload to QA)
@@ -64,21 +39,26 @@ backend/
 - 🌐 Gemini API (via `google.generativeai`)
 - 🔐 Firebase Admin SDK (Firestore for chat history)
 
-### Frontend (not included here)
-- React + Tailwind + Firebase Auth
+### Frontend
+- 💻 React + TypeScript
+- 🎨 Tailwind CSS
+- 🔐 Firebase Authentication
+- 📦 React Dropzone (PDF uploads)
+- 🧠 Context + Hooks for state management
+- ⚙️ Framer Motion for animations
 
 ---
 
 ## 🔑 Setup Instructions
 
-1. Clone the repo
+### Backend
 
 ```bash
 git clone https://github.com/yourusername/ExamPrep.git
 cd ExamPrep/backend
 ```
 
-2. Create a `.env` file for backend
+1. Create a `.env` file:
 
 ```env
 GOOGLE_API_KEY=your_gemini_key
@@ -87,16 +67,37 @@ FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY----
 FIREBASE_CLIENT_EMAIL=abc@yourproject.iam.gserviceaccount.com
 ```
 
-3. Install dependencies
+2. Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Run the FastAPI server
+3. Run the server:
 
 ```bash
 uvicorn main:app --reload
+```
+
+### Frontend
+
+```bash
+cd ../frontend
+npm install
+npm run dev
+```
+
+Add your Firebase config to `src/config/firebase.ts`
+
+```ts
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID",
+};
 ```
 
 ---
@@ -115,4 +116,4 @@ uvicorn main:app --reload
 
 ## 🤖 Credits
 
-Built with ❤️ using FastAPI + Gemini + ChromaDB.
+Built with ❤️ by Devanshu using FastAPI, Gemini, React, and Firebase.
