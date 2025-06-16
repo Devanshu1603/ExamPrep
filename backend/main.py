@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
 # Import routers
 from routes import (
     upload,
@@ -34,3 +35,7 @@ app.include_router(yt_summarize, tags=["YouTube Transcript Extractor"])
 @app.get("/")
 def read_root():
     return {"message": "AI Exam Preparation API is live and ready!"}
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port)
