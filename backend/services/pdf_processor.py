@@ -2,17 +2,17 @@ import fitz  # PyMuPDF
 import pytesseract
 from PIL import Image
 import io
+import os
 import platform
+from config.env import PYTESSERACT_PATH  # ✅ Use from your centralized env.py
 
-# Optional: Set Tesseract path dynamically (especially for Windows or custom installs)
-try:
-    from config.env import PYTESSERACT_PATH
-    if PYTESSERACT_PATH and len(PYTESSERACT_PATH.strip()) > 0:
-        pytesseract.pytesseract.tesseract_cmd = PYTESSERACT_PATH
-    elif platform.system() == "Windows":
-        pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-except Exception as e:
-    print(f"⚠️ Skipping tesseract_cmd set: {e}")
+# ✅ Dynamically set the Tesseract path
+if PYTESSERACT_PATH and os.path.exists(PYTESSERACT_PATH):
+    pytesseract.pytesseract.tesseract_cmd = PYTESSERACT_PATH
+elif platform.system() == "Windows":
+    pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+else:
+    print("⚠️ Warning: Tesseract path not set or found!")
 
 
 def extract_text_from_any_pdf(pdf_path, output_txt_path=None):
@@ -42,7 +42,7 @@ def extract_text_from_any_pdf(pdf_path, output_txt_path=None):
             image_ext = base_image["ext"]
 
             try:
-                img_pil = Image.open(io.BytesIO(image_bytes)).convert("L")  # grayscale
+                img_pil = Image.open(io.BytesIO(image_bytes)).convert("L")  # Grayscale
                 ocr_text = pytesseract.image_to_string(img_pil)
 
                 if ocr_text.strip():

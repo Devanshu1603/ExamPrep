@@ -17,7 +17,7 @@ const YouTubeSummarizer: React.FC = () => {
 
     try {
       const response = await fetch(
-      `http://13.60.137.213:8000/yt-summarize?video_url=${encodeURIComponent(videoUrl)}`
+      `http://localhost:8000/yt-summarize?video_url=${encodeURIComponent(videoUrl)}`
       );
 
       const result = await response.text();
@@ -57,7 +57,8 @@ const YouTubeSummarizer: React.FC = () => {
     };
 
   return (
-    <div className="w-full px-2 sm:px-8 py-4 mx-auto">
+  <div className="w-full flex justify-center px-2 sm:px-8 py-6">
+    <div className="w-full max-w-4xl">
       <div className="text-center mb-6">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-error-100 dark:bg-error-900/30 text-error-600 dark:text-error-400 mb-4">
           <Youtube className="h-8 w-8" />
@@ -110,7 +111,7 @@ const YouTubeSummarizer: React.FC = () => {
       {summary && (
         <div className="mt-6 bg-white dark:bg-neutral-900 p-6 rounded-lg border border-neutral-200 dark:border-neutral-700 min-h-[160px] w-full">
           <h3 className="text-lg font-semibold mb-2">Video Summary:</h3>
-          <p className="text-neutral-800 dark:text-neutral-300 whitespace-pre-line text-lg">{summary}</p>
+          <p className="text-neutral-800 dark:text-neutral-300 whitespace-pre-line text-base sm:text-sm">{summary}</p>
         </div>
       )}
 
@@ -121,7 +122,8 @@ const YouTubeSummarizer: React.FC = () => {
         </div>
       )}
     </div>
-  );
-};
+  </div>
+)};
+
 
 export default YouTubeSummarizer;

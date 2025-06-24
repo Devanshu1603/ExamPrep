@@ -40,7 +40,7 @@ const ChatInterface: React.FC = () => {
     setIsTyping(true);
     
     try {
-      const response = await fetch('http://13.60.137.213:8000/query/pdf', {
+      const response = await fetch('http://localhost:8000/query/pdf', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import os
-from services.embedder import get_model
+# from services.embedder import get_model
 
 # Import routers
 from routes import (
@@ -47,11 +47,11 @@ app.include_router(yt_summarize, tags=["YouTube Transcript Extractor"])
 def read_root():
     return {"message": "AI Exam Preparation API is live and ready!"}
 
-@app.get("/health")
-async def health_check():
+# @app.get("/health")
+# async def health_check():
     
-    model = get_model()
-    return {"status": "ok", "model_loaded": str(type(model).__name__)}
+#     model = get_model()
+#     return {"status": "ok", "model_loaded": str(type(model).__name__)}
 
 
 if __name__ == "__main__":
