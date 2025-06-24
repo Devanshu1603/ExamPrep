@@ -17,7 +17,7 @@ const YouTubeSummarizer: React.FC = () => {
 
     try {
       const response = await fetch(
-      `http://localhost:8000/yt-summarize?video_url=${encodeURIComponent(videoUrl)}`
+      `http://13.60.137.213:8000/yt-summarize?video_url=${encodeURIComponent(videoUrl)}`
       );
 
       const result = await response.text();

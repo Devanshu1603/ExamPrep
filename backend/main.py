@@ -1,14 +1,16 @@
-from fastapi import FastAPI
+from fastapi import FastAPI 
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import os
+from services.embedder import get_model
+
 # Import routers
 from routes import (
     upload,
     summerize,
     question_gen,
     yt_summarize,
-    rag_query  # ✅ Single router for all RAG queries
+    rag_query
 )
 
 app = FastAPI(
@@ -17,18 +19,26 @@ app = FastAPI(
     version="2.0.0"
 )
 
-# CORS settings (adjust for production)
+# ✅ Specify exact frontend origins
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://13.60.137.213:8000",  # Optional, if directly accessing IP in browser
+    "https://exam-preparation-ai.vercel.app/",  # Vercel deployment
+]
+
+# ✅ Updated CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,  # 👈 REPLACED "*" with actual origins
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include feature-specific routers
+# ✅ Include routers
 app.include_router(upload, tags=["Upload Handler"])
-app.include_router(rag_query, tags=["RAG: Query System"])  # ✅ Unified router
+app.include_router(rag_query, tags=["RAG: Query System"])
 app.include_router(summerize, tags=["Text Summarizer"])
 app.include_router(question_gen, tags=["Question Generator"])
 app.include_router(yt_summarize, tags=["YouTube Transcript Extractor"])
@@ -36,6 +46,13 @@ app.include_router(yt_summarize, tags=["YouTube Transcript Extractor"])
 @app.get("/")
 def read_root():
     return {"message": "AI Exam Preparation API is live and ready!"}
+
+@app.get("/health")
+async def health_check():
+    
+    model = get_model()
+    return {"status": "ok", "model_loaded": str(type(model).__name__)}
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))

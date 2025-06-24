@@ -17,25 +17,23 @@ RUN apt-get update && apt-get install -y \
     ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirement files
+# Copy requirements
 COPY requirements.txt .
 
 # Install Python packages
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# Pre-download Hugging Face model to avoid runtime timeout
-RUN python -c "\
-from sentence_transformers import SentenceTransformer; \
-SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')"
+# ✅ Preload SentenceTransformer model at build time
+RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('paraphrase-MiniLM-L3-v2')"
 
-# Copy project files
+# Copy all code
 COPY . .
 
-# Copy .env file
+# Copy environment file if used
 COPY .env .env
 
 # Expose port
 EXPOSE 8000
 
-# Run the app
+# Run the FastAPI app
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

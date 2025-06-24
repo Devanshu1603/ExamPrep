@@ -1,4 +1,5 @@
 from fastapi import APIRouter, UploadFile, File
+from fastapi.responses import JSONResponse
 import os
 from services.pdf_processor import extract_text_from_any_pdf
 from services.chunker import header_aware_recursive_chunk
@@ -9,39 +10,49 @@ router = APIRouter()
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-@router.post("/upload/pdf/")
+
+def success_response(message: str, chunks: int, file_id: str) -> JSONResponse:
+    return JSONResponse(
+        status_code=200,
+        content={
+            "status": "success",
+            "message": message,
+            "chunks": chunks,
+            "file_id": file_id
+        }
+    )
+
+
+def error_response(message: str = "Something went wrong during upload.") -> JSONResponse:
+    return JSONResponse(
+        status_code=500,
+        content={
+            "status": "error",
+            "message": message
+        }
+    )
+
+
+@router.post("/upload/pdf/", response_class=JSONResponse)
 async def upload_pdf(file: UploadFile = File(...)):
-    file_path = os.path.join(UPLOAD_DIR, file.filename)
-    with open(file_path, "wb") as f:
-        f.write(await file.read())
+    try:
+        file_path = os.path.join(UPLOAD_DIR, file.filename)
+        with open(file_path, "wb") as f:
+            f.write(await file.read())
 
-    text = extract_text_from_any_pdf(file_path)
-    print(text)
-    chunks = header_aware_recursive_chunk(text)
-    print(chunks)
-    add_documents(chunks, source_filename="pdf_syllabus")
-    return {"message": f"Uploaded and processed {file.filename}", "chunks": len(chunks)}
+        print(f"✅ PDF saved at: {file_path}")
 
-@router.post("/upload/book/")
-async def upload_book(file: UploadFile = File(...)):
-    file_path = os.path.join(UPLOAD_DIR, file.filename)
-    with open(file_path, "wb") as f:
-        f.write(await file.read())
+        text = extract_text_from_any_pdf(file_path)
+        print(f"✅ Extracted text length: {len(text)}")
 
-    text = extract_text_from_any_pdf(file_path)  # or your book text extractor
-    chunks = header_aware_recursive_chunk(text)
-    add_documents(chunks, source_filename="book_companion")
-    return {"message": f"Uploaded and processed book {file.filename}", "chunks": len(chunks)}
+        chunks = header_aware_recursive_chunk(text)
+        print(f"✅ Chunked into {len(chunks)} sections")
 
-@router.post("/upload/youtube/")
-async def upload_youtube_transcript(file: UploadFile = File(...)):
-    # Assume a plain text transcript upload
-    file_path = os.path.join(UPLOAD_DIR, file.filename)
-    with open(file_path, "wb") as f:
-        f.write(await file.read())
+        add_documents(chunks, source_filename="pdf_syllabus")
+        print("✅ Embeddings stored")
 
-    with open(file_path, "r", encoding="utf-8") as f:
-        text = f.read()
-    chunks = header_aware_recursive_chunk(text)
-    add_documents(chunks, source_filename="youtube")
-    return {"message": f"Uploaded and processed youtube transcript {file.filename}", "chunks": len(chunks)}
+        return success_response(f"Uploaded and processed {file.filename}", len(chunks), file.filename)
+
+    except Exception as e:
+        print(f"❌ Upload failed: {e}")
+        return error_response(str(e))

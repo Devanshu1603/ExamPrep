@@ -4,7 +4,7 @@ import ChatHistoryItem from './ChatHistoryItem';
 import { useChat } from '../../context/ChatContext';
 
 interface SidebarProps {
-  onFeatureSelect: (feature: 'chat' | 'youtube' | 'book' | 'upload') => void;
+  onFeatureSelect: (feature: 'chat' | 'youtube' | 'book' | 'upload' | 'faq') => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ onFeatureSelect }) => {
@@ -117,7 +117,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onFeatureSelect }) => {
                 <span>Book Companion</span>
               </button>
               
-              <button className="flex items-center space-x-2 w-full px-3 py-2 text-sm rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
+              <button
+              onClick={() => onFeatureSelect('faq')}
+               className="flex items-center space-x-2 w-full px-3 py-2 text-sm rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
                 <HelpCircle className="h-4 w-4 text-warning-500" />
                 <span>FAQ & Help</span>
               </button>

@@ -2,9 +2,18 @@ import fitz  # PyMuPDF
 import pytesseract
 from PIL import Image
 import io
-from config.env import PYTESSERACT_PATH
+import platform
 
-pytesseract.pytesseract.tesseract_cmd = PYTESSERACT_PATH
+# Optional: Set Tesseract path dynamically (especially for Windows or custom installs)
+try:
+    from config.env import PYTESSERACT_PATH
+    if PYTESSERACT_PATH and len(PYTESSERACT_PATH.strip()) > 0:
+        pytesseract.pytesseract.tesseract_cmd = PYTESSERACT_PATH
+    elif platform.system() == "Windows":
+        pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+except Exception as e:
+    print(f"⚠️ Skipping tesseract_cmd set: {e}")
+
 
 def extract_text_from_any_pdf(pdf_path, output_txt_path=None):
     doc = fitz.open(pdf_path)
@@ -12,42 +21,39 @@ def extract_text_from_any_pdf(pdf_path, output_txt_path=None):
 
     for page_num in range(len(doc)):
         page = doc.load_page(page_num)
-        
-        # ✅ Try to extract digital text first
         text = page.get_text()
-        
+
         if text.strip():
             full_text += f"\n--- Page {page_num + 1}: Digital Text ---\n{text}"
-            continue  # Skip OCR if digital text is present
+            continue  # Digital text found, skip OCR
 
-        # ❌ No digital text → fallback to OCR from images
+        # If no digital text, try OCR
         image_list = page.get_images(full=True)
         if not image_list:
             full_text += f"\n--- Page {page_num + 1}: No Text Found ---\n"
             continue
 
-        print(f"OCR on Page {page_num + 1}...")
+        print(f"🔍 OCR Required on Page {page_num + 1}...")
 
         for img_index, img in enumerate(image_list):
             xref = img[0]
             base_image = doc.extract_image(xref)
             image_bytes = base_image["image"]
-            image = Image.open(io.BytesIO(image_bytes))
+            image_ext = base_image["ext"]
 
-            # OCR
-            ocr_text = pytesseract.image_to_string(image)
-            full_text += f"\n--- Page {page_num + 1}, Image {img_index + 1}: OCR ---\n{ocr_text}"
+            try:
+                img_pil = Image.open(io.BytesIO(image_bytes)).convert("L")  # grayscale
+                ocr_text = pytesseract.image_to_string(img_pil)
+
+                if ocr_text.strip():
+                    full_text += f"\n--- Page {page_num + 1}, Image {img_index + 1}: OCR Text ---\n{ocr_text}"
+                else:
+                    full_text += f"\n--- Page {page_num + 1}, Image {img_index + 1}: OCR Failed or No Text ---\n"
+            except Exception as e:
+                full_text += f"\n--- Page {page_num + 1}, Image {img_index + 1}: OCR Error ---\nError: {str(e)}\n"
 
     if output_txt_path:
         with open(output_txt_path, "w", encoding="utf-8") as f:
             f.write(full_text)
-        print(f"\n✅ Saved combined text to: {output_txt_path}")
 
     return full_text
-
-# if __name__ == "__main__":
-#     pdf_path = "uploades\CN pyq.pdf"  # Replace with your actual PDF filename
-#     output_path = "extracted_text.txt"
-    
-#     result = extract_text_from_any_pdf(pdf_path, output_path)
-#     print("\n🔍 Extracted Text Preview:\n", result[:1000])  # print first 1000 characters
