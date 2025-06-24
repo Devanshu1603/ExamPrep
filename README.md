@@ -62,9 +62,7 @@ cd ExamPrep/backend
 
 ```env
 GOOGLE_API_KEY=your_gemini_key
-FIREBASE_PROJECT_ID=your_project_id
-FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
-FIREBASE_CLIENT_EMAIL=abc@yourproject.iam.gserviceaccount.com
+PYTESSERACT_PATH=path of PYTESSERACT installed on your system
 ```
 
 2. Install dependencies:
